@@ -1,13 +1,20 @@
-#include "date.h"
-
+#include "Header.h"
 int main()
 {
 	setlocale(LC_ALL, "rus");
 
-	date obj, obj_2;
+	Date date_1, date_2;
 	int new_date;
 
-	print(obj + 15);
+	date_1 = date_2;
+
+	date_1.add_day();
+
+	date_1();
+
+	date_1 > date_2 ? cout << "\nпервая дата больше\n" : cout << "\nвторая дата больше\n";
+
+	cout << date_2;
 
 	return 0;
 }

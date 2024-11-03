@@ -1,60 +1,60 @@
 #pragma once
 
 #include <iostream>
-#define SIZE 12
+#define SIZE_YEAR 12
+#define SIZE_MONTH 30
 
 using namespace std;
 
-class date
+class Date
 {
 private:
 	int day;
 	int month;
 	int year;
 	char* week_day;
-public:
-	date() : date(25, 1, 2000, nullptr) {}
-	explicit date(int day_p) : date(day_p, 1, 2000, nullptr) {}
-	date(int day_p, int month_p, int year_p, char* week_day_p) : day{ day_p }, month{ month_p }, year{ year_p }, week_day{ week_day_p ? new char[strlen(week_day_p) + 1] : nullptr }
-	{
-		if (week_day)
-		{
-			strcpy_s(week_day, strlen(week_day_p) + 1, week_day_p);
-		}
-	}
-	date(const date& date) : day{ date.day }, month{ date.month }, year{ date.year }, week_day{ new char[strlen(date.week_day) + 1] }
-	{
-		strcpy_s(week_day, strlen(date.week_day) + 1, date.week_day);
-	}
 
+public:
+	Date() : Date(30, 12, 2000, "Monday") {}
+
+	explicit Date(int day_p) : Date(day_p, 1, 2000, nullptr) {}
+
+	Date(const int day_p, const int month_p, const int year_p, const char* week_day_p);//главный конструктор
+
+	Date(const Date& date);//конструктор копировани€
+
+	//аксессоры и модификаторы
 	void set_day(int day_p)
 	{
-		if (day_p > 30 || day_p <= 0)
+		if (day_p > SIZE_MONTH || day_p <= 0)
 		{
-			cout << "¬ведено недопустимое значение!";
+			cout << "\n¬ведено недопустимое значение!\n";
 			return;
 		}
 
 		day = day_p;
 	}
+
 	void set_month(int month_p)
 	{
-		if (month_p > 12 || month_p <= 0)
+		if (month_p > SIZE_YEAR || month_p <= 0)
 		{
-			cout << "¬ведено недопустимое значение!";
+			cout << "\n¬ведено недопустимое значение!\n";
 			return;
 		}
 		month = month_p;
 	}
+
 	void set_year(int year_p)
 	{
 		if (year_p < 0)
 		{
-			cout << "¬ведено недопустимое значение!";
+			cout << "\n¬ведено недопустимое значение!\n";
 			return;
 		}
 		year = year_p;
 	}
+
 	void set_week_day(char* week_day_p)
 	{
 		if (week_day)
@@ -66,128 +66,146 @@ public:
 
 		strcpy_s(week_day, strlen(week_day_p) + 1, week_day_p);
 	}
+
 	int get_day() const
 	{
 		return day;
 	}
+
 	int get_month() const
 	{
 		return month;
 	}
+
 	int get_year() const
 	{
 		return year;
 	}
+
 	const char* get_week_day() const
 	{
 		return week_day;
 	}
-	void print()
+
+	void add_day()
 	{
-		printf("“екуща€ дата: %d.%d.%d", day, month, year);
+		day++;
+		if (day > SIZE_MONTH)
+		{
+			day = 1;
+			month++;
+			if (month > SIZE_YEAR)
+			{
+				month = 1;
+				year++;
+			}
+		}
 	}
 
-	friend const date operator+(const date& obj_p, int num)
+	void print()const//показывает дату
 	{
-		int count = 0, count_2 = 0;
-		int buffer = obj_p.day + num, buffer_2 = obj_p.month;// 30.12.2024 + 15 = 15.1.2025
+		printf("“екуща€ дата: %d.%d.%d %s", day, month, year, week_day);
+	}
 
-		while (buffer > 30)
+	//перегрузка операторов
+	//перегрузка операторов ++ и --
+	friend const Date operator++(const Date& obj_p)
+	{
+		int count = 0, count_2 = 0;//переменные счетчики, нужны дл€ того, чтобы в случае, если число дней превысит 30 или число мес€цев
+		//превысит 12, то в счетчике сохран€етс€ эта информаци€ и к мес€цу или к году прибав€тс€ впоследсвии данные счетчики
+		//count прибавл€етс€ к мес€цам, count_2 прибавл€етс€ к годам
+		int buffer = obj_p.day + 1, buffer_2 = obj_p.month;//буферные значени€, в которые записываютс€ значени€ 
+
+		if (buffer > SIZE_MONTH)//провер€ет границы мес€ца
 		{
 			count++;
-			buffer -= 30;
-		} // buf = 15, count = 1
+			buffer = 1;
+		}
 
-		buffer += count;
-
-		while (buffer_2 > 12)
+		if (buffer_2 + count > SIZE_YEAR)//провер€ет границы года
 		{
 			count_2++;
-			buffer_2 -= 12;
-		} // buf_2 = 1, count_2 = 1
+			buffer_2 = 1;
+		}
 
-		return date(buffer, buffer_2, obj_p.year + count_2, obj_p.week_day);
+		return Date(buffer, buffer_2, obj_p.year + count_2, obj_p.week_day);
 	}
 
-	friend const date operator-(const date& obj_p, int num)
+	friend const Date operator--(const Date& obj_p)
 	{
-		int count = 0, count_2 = 0;
-		int buffer = obj_p.day - num, buffer_2 = obj_p.month;
-
-		while (buffer <= 0)
-		{
-			count++;
-			buffer += 30;
-		}
-
-		while (buffer_2 - count <= 0)
-		{
-			count_2++;
-			buffer_2 += 12;
-		}
-
-		return date(buffer, buffer_2, obj_p.year - count_2, obj_p.week_day);
-	}
-
-	friend const date operator++(const date& obj_p)
-	{
-		int count = 0, count_2 = 0;
-		int buffer = obj_p.day + 1, buffer_2 = obj_p.month;
-
-		if (buffer > 30)
-		{
-			count++;
-			buffer -= 30;
-		}
-
-		if (buffer_2 + count > 12)
-		{
-			count_2++;
-			buffer_2 -= 12;
-		}
-
-		return date(buffer, buffer_2, obj_p.year + count_2, obj_p.week_day);
-	}
-
-	friend const date operator--(const date& obj_p)
-	{
-		int count = 0, count_2 = 0;
+		int count = 0, count_2 = 0;//аналогично с перегрузкой оператора ++
 		int buffer = obj_p.day - 1, buffer_2 = obj_p.month;
 
 		if (buffer <= 0)
 		{
 			count++;
-			buffer += 30;
+			buffer = 1;
 		}
 
 		if (buffer_2 - count <= 0)
 		{
 			count_2++;
-			buffer_2 += 12;
+			buffer_2 = 1;
 		}
 
-		return date(buffer, buffer_2, obj_p.year - count_2, obj_p.week_day);
+		return Date(buffer, buffer_2, obj_p.year - count_2, obj_p.week_day);
 	}
 
-	const date& operator=(const date& date)
+	const Date& operator=(const Date& date)//перегрузка оператора копирующего присваивани€
 	{
-		if (&date != this)
+		if (&date != this)//проверка на самокопирование
 		{
 			day = date.day;
 			month = date.month;
 			year = date.year;
+			
+			delete[] week_day;
+
+			week_day = new char[strlen(date.week_day) + 1];
+
+			strcpy_s(week_day, strlen(date.week_day) + 1, date.week_day);
 		}
+		return* this;
 	}
 
-	friend ostream& operator<<(ostream& cout, const date& date)
+	// перегрузка операторов присваивани€
+	const Date& operator+=(const Date& date)
+	{
+		day += date.day;
+		month += date.month;
+		year += date.year;
+
+		delete[] week_day;
+
+		week_day = new char[strlen(date.week_day) + 1];
+
+		strcpy_s(week_day, strlen(date.week_day) + 1, date.week_day);
+		return*this;
+	}
+
+	const Date& operator-=(const Date& date)
+	{
+		day -= date.day;
+		month -= date.month;
+		year -= date.year;
+
+		delete[] week_day;
+
+		week_day = new char[strlen(date.week_day) + 1];
+
+		strcpy_s(week_day, strlen(date.week_day) + 1, date.week_day);
+		return*this;
+	}
+
+	friend ostream& operator<<(ostream& cout, const Date& date)
 	{
 		printf("%d.%d.%d %s", date.day, date.month, date.year, date.week_day);
 		return cout;
 	}
 
-	friend istream& operator>>(istream& cin, date& date)
+	friend istream& operator>>(istream& cin, Date& date)
 	{
-		char buf[SIZE];
+		char buf[SIZE_YEAR];
 
 		cin >> date.day;
 		cin >> date.month;
@@ -196,47 +214,48 @@ public:
 		strcpy_s(date.week_day, strlen(buf) + 1, buf);
 		return cin;
 	}
+	
 
-	friend bool operator>(const date& date, const date& date_2)
+	//перегрузка логических операторов
+	friend bool operator>(const Date& date, const Date& date2)
 	{
 		return date.year < date2.year ? 1 : date.month < date2.month ? 1 : date.day < date2.day ? 1 : 0;
 	}
 
-	friend bool operator<(const date& date, const date& date2)
+	friend bool operator<(const Date& date, const Date& date2)
 	{
 		return date.year > date2.year ? 1 : date.month > date2.month ? 1 : date.day > date2.day ? 1 : 0;
 	}
 
-	friend bool operator==(const date& date, const date& date2)
+	friend bool operator==(const Date& date, const Date& date2)
 	{
 		return date.year == date2.year ? 0 : date.month == date2.month ? 0 : date.day == date2.day ? 0 : 1;
 	}
 
-	friend bool operator<=(const date& date, const date& date2)
+	friend bool operator<=(const Date& date, const Date& date2)
 	{
 		return date.year <= date2.year ? 1 : date.month <= date2.month ? 1 : date.day <= date2.day ? 1 : 0;
 	}
 
-	friend bool operator>=(const date& date, const date& date2)
+	friend bool operator>=(const Date& date, const Date& date2)
 	{
 		return date.year >= date2.year ? 1 : date.month >= date2.month ? 1 : date.day >= date2.day ? 1 : 0;
 	}
 
-	friend bool operator!=(const date& date, const date& date2)
+	friend bool operator!=(const Date& date, const Date& date2)
 	{
 		return date.year != date2.year ? 0 : date.month != date2.month ? 0 : date.day != date2.day ? 0 : 1;
 	}
+	//перегрузка ()
+	void operator()()
+	{
+		printf("\n“екуща€ дата: [ %d.%d.%d ] { %s }", day, month, year, week_day);
+	}
 
-
-	~date()
+	~Date()//деструктор
 	{
 		delete[] week_day;
 	}
 };
 
-void print(date obj)
-{
-	cout << obj.get_day() << ".";
-	cout << obj.get_month() << ".";
-	cout << obj.get_year() << "\n";
-}
+
